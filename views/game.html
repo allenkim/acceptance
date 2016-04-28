@@ -3,25 +3,30 @@
 	<head>
 		<meta charset="utf-8" />
 		<title> Game </title>
-
 		<script type="text/javascript" src="phaser_js/phaser-no-physics.min.js"></script>
 		<script type="text/javascript" src="phaser_js/boot.js"></script>
 		<script type="text/javascript" src="phaser_js/load.js"></script>
 		<script type="text/javascript" src="phaser_js/play.js"></script>
-		<script type="text/javascript" src="phaser_js/init.js"></script>
 		<script src="/socket.io/socket.io.js"></script>
 		<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 		<script src="views_js/game.js"></script> 
 		<link rel="stylesheet" type="text/css" href="css/game.css">
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
 	</head>
-
 	<body>
-		<div id="gameDiv"> </div>
-		<div id="chat">
+		<div id="gameDiv" class="col-lg-4"></div>
+		<div id="chat" class="col-lg-8">
 			<ul id="messages"></ul>
 			<form action="">
 				<input id="m" autocomplete="off" /><button>Send</button>
 			</form>
 		</div>
+		
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+		<script type="text/javascript" src="phaser_js/init.js"></script>
 	</body>
 </html>

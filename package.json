@@ -4,7 +4,8 @@
   "description": "A resistance clone",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
@@ -19,5 +20,6 @@
     "ejs": "^2.4.1",
     "express": "^4.13.4",
     "socket.io": "^1.4.5"
-  }
+  },
+  "homepage": "https://github.com/allenkim/acceptance"
 }

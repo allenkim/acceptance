@@ -30,7 +30,7 @@ img {
 	margin: auto;
 }
 #Box2 {
-	background-color: #fafcf1;
+	background: linear-gradient(to left, #fafcf1, #e1e2d8);
 	margin-top: 5px;
 	height: 50%;
 	overflow-y: scroll;
@@ -38,7 +38,7 @@ img {
 #Box3 {
 	padding: 0px; 
 	height: 100%;
-	background-color: #FFD155;
+	background-color: #c9a1ae;
 }
 
 th {
@@ -53,12 +53,14 @@ th {
 }
 
 #chat-title {
-	background-color:  #B86B00;
+	background: linear-gradient(to top left, #ff3232, #168cfa);
 	font-size: 40px;
 	font-family: "Comic Sans MS";
+	color: white;
 	margin: auto;
 	width: 100%;
 	height: 10%;
+	border-radius: 15px;
 }
 
 #messagespace {
@@ -67,8 +69,7 @@ th {
 	width: 100%;
 	height: 80%;
 	overflow-y: scroll;
-	background-color: #FFD599;
-	border-radius: 15px;
+	background: linear-gradient(to bottom, #c9a1ae, #28d2d6);
 }
 
 #messages {
@@ -78,11 +79,9 @@ th {
 }
 
 #messages li { 
-	padding: 5px 10px; 
-}
-
-#messages li:nth-child(odd) { 
-	background: #ffa222; 
+	padding: 5px 10px;
+	font-size: 15px;
+	background: #25b0b4;  
 }
 
 #minput {

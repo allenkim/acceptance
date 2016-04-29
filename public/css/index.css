@@ -1,0 +1,45 @@
+html {
+	background: linear-gradient(to left, #650404, #0A0942);
+	width: 100%; 
+	height: 100%;
+}
+body {
+	width: 100%; 
+	height: 100%;
+}
+#centerdiv {
+	margin: auto;
+	margin-top: 5%;
+	background: linear-gradient(to bottom right, #076350, #504045);
+	width: 50%;
+	height: 80%;
+	border-radius: 15px;
+}
+
+#title {
+	width: 100%;
+}
+
+p {
+	font-size: 34px;
+	font-family: "Impact";
+	text-align: center;
+	margin: 0 0 0px !important;
+}
+
+#join {
+	border-radius: 10px;
+	margin-left: 40%;
+	width: 20%; 
+	margin-right: 40%;
+	margin-top: 5%;
+	height: 10%;
+	background: #fafcf1; 
+	border: none; 
+
+}
+
+#waitingText {
+	margin-top: 5%;
+	text-align: center;
+}

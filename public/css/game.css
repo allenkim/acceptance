@@ -1,3 +1,99 @@
+body { 
+	font: 24px Helvetica, Arial; 
+}
+p {
+	margin: 0 0 0px !important;
+	text-align: center;
+}
+#Box1-2 {
+	padding: 0px; 
+	height: 100%;
+}
+#Box1 {
+	background-color: #000000;
+	height: 50%;
+	border-radius: 15px;
+}
+#gameDiv {
+	width: 300px;
+	height: 225px;
+	padding: 0;
+	margin: auto;
+}
+#Box2 {
+	background-color: #fafcf1;
+	margin-top: 5px;
+	height: 50%;
+	overflow-y: scroll;
+}
+#Box3 {
+	padding: 0px; 
+	height: 100%;
+	background-color: #FFD155;
+}
+
+th {
+	text-align: center;
+}
+
+#chat {
+	width: 100%;
+	height: 100%;
+	padding: 0px;
+	margin: 0px;
+}
+
+#messagespace {
+	margin: 0; 
+	padding: 5px; 
+	width: 100%;
+	height: 90%;
+	overflow-y: scroll;
+}
+
+#messages {
+	list-style-type: none; 
+	width: 100%;
+	height: 100%;
+}
+
+#messages li { 
+	padding: 5px 10px; 
+}
+
+#messages li:nth-child(odd) { 
+	background: #ffa222; 
+}
+
+#minput {
+	border-radius: 10px;
+	background: #000000; 
+	margin-left: 0px;
+	padding-left: 0px;
+	bottom: 0;
+	width: 100%;
+	height: 10%; 
+}
+
+#m {
+	border-radius: 10px;
+	margin-left: 1%;
+	margin-top: 2.5%;
+	padding: 1%;
+	width: 85%;
+	height: 50%;
+}
+
+form button {
+	border-radius: 10px;
+	margin-top: 2.5%; 
+	margin-left: 2%;
+	width: 10%; 
+	height: 50%;
+	background: #fafcf1; 
+	border: none; 
+}
+
 /*
 * {
   	margin: 0; 
@@ -10,28 +106,6 @@ body {
 	font: 13px Helvetica, Arial; 
 }
 
-form {
-	background: #000; 
-	padding: 3px;
-	position: fixed; 
-	bottom: 0; 
-	width: 50%; 
-}
-
-form input {
-	border: 0; 
-	padding: 10px; 
-	width: 90%; 
-	margin-right: .5%; 
-}
-
-form button { 
-	width: 9%; 
-	background: rgb(130, 224, 255); 
-	border: none; 
-	padding: 10px; 
-}
-
 #messages {
 	list-style-type: none; 
 	margin: 0; 
@@ -39,11 +113,4 @@ form button {
 	width: 50% 
 }
 
-#messages li { 
-	padding: 5px 10px; 
-}
-
-#messages li:nth-child(odd) { 
-	background: #eee; 
-}
 */

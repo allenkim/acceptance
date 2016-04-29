@@ -62,13 +62,17 @@ app.post('/enter',function(req,res){
 // A client can only join the game if they are ready, meaning they have waited and the players have filled up
 // and if they are part of the approved sessionIDs
 app.get('/game', function(req, res){
-	if (req.session.ready){
-		req.session.ready = false;
+	
+	// ---- THESE ARE COMMENTED FOR BUILDING PURPOSES ------
+	//if (req.session.ready){
+	//	req.session.ready = false;
 		res.render('game.html');
-	}
-	else{
-		res.send('You are not authorized to join the game!');
-	}
+	//}
+	//else{
+	//	res.send('You are not authorized to join the game!');
+	//}
+	// ---- THESE ARE COMMENTED FOR BUILDING PURPOSES ------
+
 });
 
 // Variables to keep track of player count

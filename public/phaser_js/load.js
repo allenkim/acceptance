@@ -12,6 +12,12 @@ var loadState = {
 
 		// Load all assets
 		game.load.spritesheet('mute', 'assets/muteButton.png', 28, 22);
+
+		game.load.image('u', 'assets/sprites/unknown.png');
+		game.load.image('r', 'assets/sprites/r.png');
+		game.load.image('s', 'assets/sprites/s.png');
+		game.load.image('r2', 'assets/sprites/r2.png');
+		game.load.image('s2', 'assets/sprites/s2.png');
 		
 		//  Firefox doesn't support mp3 files, so use ogg
     game.load.audio('music', ['assets/music.mp3', 'assets/music.ogg']);

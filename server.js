@@ -6,6 +6,24 @@ var bodyParser = require('body-parser');
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+// Variables to keep track of player count
+var MAX_NUM_PLAYERS = 2;
+var playersWaiting = [];
+var playersInGame = [];
+var resistanceorspy = [1,0,0,1,1]; // 0 means spy 1 means resistance
+
+// Fischer-Yates Algorithm for shuffling an array - https://www.kirupa.com/html5/shuffling_array_js.htm
+Array.prototype.shuffle = function() {
+	var input = this;
+	for (var i = 0; i < input.length; i++) {
+		var randomindex = Math.floor(Math.random()*(input.length + 1));
+		var temp = input[randomindex];
+		input[randomindex] = input[i];
+		input[i] = temp;
+	}
+	return input;
+}
+
 // Set the parameters
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -64,20 +82,16 @@ app.post('/enter',function(req,res){
 app.get('/game', function(req, res){
 	
 	// ---- THESE ARE COMMENTED FOR BUILDING PURPOSES ------
-	//if (req.session.ready){
-	//	req.session.ready = false;
+	if (req.session.ready){
+		req.session.ready = false;
 		res.render('game.html');
-	//}
-	//else{
-	//	res.send('You are not authorized to join the game!');
-	//}
+	}
+	else{
+		res.send('You are not authorized to join the game!');
+	}
 	// ---- THESE ARE COMMENTED FOR BUILDING PURPOSES ------
 
 });
-
-// Variables to keep track of player count
-var MAX_NUM_PLAYERS = 2;
-var playersWaiting = [];
 
 io.on('connection', function(socket){
 	console.log('user ' +  socket.id + ' connected');
@@ -116,6 +130,22 @@ io.on('connection', function(socket){
 		}
 	});
 
+	socket.on('gamestart', function(){
+		playersInGame.push(socket.id);
+		console.log('Sanity Check 1-5 - ' + socket.id);
+		if (playersInGame.length == MAX_NUM_PLAYERS) {
+			console.log('Sanity Check 2');
+			for (var i = 0 ; i < MAX_NUM_PLAYERS; i++) {
+				console.log('Sanity Check 1 - ' + playersInGame[i]);
+				io.to(playersInGame[i]).emit('index', i);
+				io.to(playersInGame[i]).emit('r_or_s', resistanceorspy[i]);
+				if (resistanceorspy[i] == 0) {
+					io.to(playersInGame[i]).emit('spyinfo', resistanceorspy);
+				}
+			}	 
+		}
+	});
+
 	socket.on('chat message', function(msg){
 		io.emit('chat message', msg);
 	});
@@ -144,6 +174,7 @@ io.on('connection', function(socket){
 			if (sockIdx != -1)
 				sessionToSockets[sessID].splice(sockIdx,1);
 		}
+
 	});
 });
 

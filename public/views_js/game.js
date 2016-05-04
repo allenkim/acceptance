@@ -12,6 +12,7 @@ var dataindex = 0;
 
 socket.on('chat message', function(msg){
 	$('#messages').append($('<li>').text(msg));
+	$('#messagespace').scrollTop(document.getElementById("messagespace").scrollHeight);
 });
 
 $(document).keyup(function(e) {

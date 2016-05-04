@@ -100,7 +100,9 @@ io.on('connection', function(socket){
 			});
 		}
 		else{
-			io.to(socket.id).emit('update waiting', {numPlayersWaitingFor: MAX_NUM_PLAYERS - playersWaiting.length, waitingAllowed: waitingAllowed});
+			playersWaiting.forEach(function(id){
+				io.to(id).emit('update waiting', {numPlayersWaitingFor: MAX_NUM_PLAYERS - playersWaiting.length, waitingAllowed: waitingAllowed});	
+			})	
 		}
 	});
 
@@ -116,6 +118,18 @@ io.on('connection', function(socket){
 
 	socket.on('chat message', function(msg){
 		io.emit('chat message', msg);
+	});
+
+	socket.on('StartTimer', function(msg) {
+		console.log('Timer Started');
+		var num = msg;
+		var id = setInterval(function() {
+			num = num - 5;
+			io.emit('timerval', num);
+			if (num == 0) {
+				clearInterval(id);
+			}
+		}, 5000);
 	});
 
 	socket.on('disconnect',function(){

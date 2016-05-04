@@ -123,11 +123,11 @@ io.on('connection', function(socket){
 	socket.on('StartTimer', function(msg) {
 		console.log('Timer Started');
 		var num = msg;
-		var id = setInterval(function() {
+		var iid = setInterval(function() {
 			num = num - 5;
 			io.emit('timerval', num);
 			if (num == 0) {
-				clearInterval(id);
+				clearInterval(iid);
 			}
 		}, 5000);
 	});

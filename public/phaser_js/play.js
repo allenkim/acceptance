@@ -6,16 +6,17 @@ socket.on('timerval', function(num) {
 
 var playState = {
 
-	create: function() { 
-		// Name of the game
-		timer = 20;
-		console.log('Sanity Check');
-
+	eztimer: function() {
 		socket.emit('StartTimer', timer);	
 		var id = setInterval(function() { 
 			timer = timer - 1; 
 			if (timer <= 0) { clearInterval(id); } 
 		}, 1000);
+	},
+	create: function() { 
+		// Name of the game
+		timer = 20;
+		this.eztimer();
 
 		nameLabel = game.add.text(game.world.centerX, 80, timer.toString(), { font: '50px Arial', fill: '#ffffff' });
 		nameLabel.anchor.setTo(0.5, 0.5);
@@ -40,5 +41,5 @@ var playState = {
 	toggleSound: function() {
 		game.sound.mute = ! game.sound.mute;
 		this.muteButton.frame = game.sound.mute ? 1 : 0;	
-	},
+	}
 };

@@ -10,7 +10,7 @@ var io = require('socket.io')(http);
 var MAX_NUM_PLAYERS = 2;
 var playersWaiting = [];
 var playersInGame = [];
-var resistanceorspy = [1,0,0,1,1]; // 0 means spy 1 means resistance
+var resistanceorspy = [1,0,1,0,1]; // 0 means spy 1 means resistance
 
 // Fischer-Yates Algorithm for shuffling an array - https://www.kirupa.com/html5/shuffling_array_js.htm
 Array.prototype.shuffle = function() {

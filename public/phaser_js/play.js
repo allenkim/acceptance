@@ -69,8 +69,9 @@ var playState = {
 		if (index != -1 && res_or_spy != -1 && spyinfo != [] && setup_players == false) {
 			for (var i = 0 ; i < playerdata.get('positions').length; i++) {
 				var spritekey = 'u';
+				var temp = ((index + i) % 5);
 				if(res_or_spy == 0) {
-					if(spyinfo[i] == 0) {
+					if(spyinfo[temp] == 0) {
 						spritekey = 's'; 
 					}
 					else {
@@ -80,8 +81,11 @@ var playState = {
 						spritekey += '2';
 					}
 				}
+				else {
+					if (i == 0) { spritekey = 'r'; }
+				}
+				temp++;
 				players.push( game.add.sprite(playerdata.get('positions')[i][0], playerdata.get('positions')[i][1], spritekey) );
-				var temp = ((index + i) % 5) + 1;
 				playertext.push( game.add.text(playerdata.get('positions')[i][0] - playerdata.get('index-x-offset'), playerdata.get('positions')[i][1], temp, { font: '20px Arial', fill: '#ffffff' }) );
 				players[i].anchor.setTo(0.5, 0.5);
 				playertext[i].anchor.setTo(0.5, 0.5);

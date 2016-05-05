@@ -40,13 +40,13 @@ playerdata.set('index-x-offset', 35);
 playerdata.set('turn', 3);
 
 var timer_text;
-function eztimer(timeDuration){
+function eztimer(timeDuration, func){
     timer = timeDuration;
     socket.emit('StartTimer', timer);	
     var id = setInterval(function() { 
         timer = timer - 1; 
         timer_text.text = timer;
-        if (timer <= 0) { clearInterval(id); } 
+        if (timer <= 0) { func(); clearInterval(id); } 
     }, 1000);
 }
 
@@ -69,8 +69,8 @@ var playState = {
 		}
 
         // Display Timer
-        timer_text = game.add.text(game.world.centerX,game.world.centerY, timer, {font: "32px Arial", fill: "#FFFFFF" });
-		eztimer(20);
+        //timer_text = game.add.text(game.world.centerX,game.world.centerY, timer, {font: "32px Arial", fill: "#FFFFFF" });
+		//eztimer(20);
 	},
 
 	update: function() {

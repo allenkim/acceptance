@@ -1,11 +1,5 @@
-// Timer update variables
-var timer;
-socket.on('timerval', function(num) {
-	console.log(num);
-	timer = num;
-});
-
 // get kicked out since all players couldn't connect in 15 seconds
+// can also get kicked out if someone disconnects in game
 socket.on('kick out', function(){
     window.location.href="/";
 });
@@ -39,23 +33,67 @@ playerdata.set('positions', [[150, 200], [50, 135], [100, 60], [200, 60], [250, 
 playerdata.set('index-x-offset', 35);
 playerdata.set('turn', 3);
 
-var timer_text;
-function eztimer(timeDuration){
+// Timer update variables
+var timer; //holds actual time for client
+var timerText; //this is the phaser object that represents the text on display
+
+socket.on('update time', function(num) {
+	timer = num;
+});
+
+socket.on('start local timer', function(num){
+    localTimer(num);
+});
+
+
+function ezTimer(timeDuration){
+    socket.emit('start timer', timeDuration);	
+};
+
+function localTimer(timeDuration){
     timer = timeDuration;
-    socket.emit('StartTimer', timer);	
     var id = setInterval(function() { 
         timer = timer - 1; 
-        timer_text.text = timer;
-        if (timer <= 0) { clearInterval(id); } 
+        timerText.text = timer;
+        if (timer <= 0) {
+            nextState();
+            clearInterval(id); 
+        } 
     }, 1000);
-}
+};
+
+var gameStates = {
+    GAME_SETUP: 1,
+    CAPTAIN_SELECTION: 2,
+    TEAM_SELECTON: 3,
+    VOTE: 4,
+    SHOW_VOTE: 5,
+    DO_MISSION: 6,
+    SHOW_RESULTS: 7
+};
+Object.freeze(gameStates);
+
+// map of whether the code in each state was run already
+var alreadyRan = false;
+
+var currentState = gameStates.GAME_SETUP;
+var currentStateText;
+
+socket.on('connection complete', function(){
+    nextState();
+});
+
+function nextState(){
+    currentState = (currentState == 7) ? 1 : currentState + 1;
+    alreadyRan = false;
+};
 
 var playState = {
 	create: function() { 
 		socket.emit('game start');
 
-		nameLabel = game.add.text(game.world.centerX, 10, 'Acceptance', { font: '20px Arial', fill: '#ffffff' });
-		nameLabel.anchor.setTo(0.5, 0.5);
+		currentStateText = game.add.text(game.world.centerX, 30, 'Waiting for players to connect', { font: '50px Arial', fill: '#ffffff' });
+		currentStateText.anchor.setTo(0.5, 0.5);
 
 		music = game.add.audio('music');
 
@@ -68,40 +106,81 @@ var playState = {
 			this.muteButton.frame = 1;
 		}
 
-        // Display Timer
-        timer_text = game.add.text(game.world.centerX,game.world.centerY, timer, {font: "32px Arial", fill: "#FFFFFF" });
-		eztimer(20);
+        timerText = game.add.text(game.world.centerX,game.world.centerY, "", {font: "32px Arial", fill: "#FFFFFF" });
+        timerText.anchor.setTo(0.5,0.5);
 	},
 
 	update: function() {
-		if (index != -1 && res_or_spy != -1 && spyinfo != [] && setup_players == false) {
-			for (var i = 0 ; i < playerdata.get('positions').length; i++) {
-				var spritekey = 'u';
-				var temp = ((index + i) % 5);
-				if(res_or_spy == 0) {
-					if(spyinfo[temp] == 0) {
-						spritekey = 's'; 
-					}
-					else {
-						spritekey = 'r'; 
-					}
-					if (i >= playerdata.get('turn')) {
-						spritekey += '2';
-					}
-				}
-				else {
-					if (i == 0) { spritekey = 'r'; }
-				}
-				temp++;
-				players.push( game.add.sprite(playerdata.get('positions')[i][0], playerdata.get('positions')[i][1], spritekey) );
-				playertext.push( game.add.text(playerdata.get('positions')[i][0] - playerdata.get('index-x-offset'), playerdata.get('positions')[i][1], temp, { font: '20px Arial', fill: '#ffffff' }) );
-				players[i].anchor.setTo(0.5, 0.5);
-				playertext[i].anchor.setTo(0.5, 0.5);
-				players[i].width = playerdata.get('size')[0];
-				players[i].height = playerdata.get('size')[1];
-			}
-			setup_players = true;
-		}
+        console.log(currentState);
+        if (currentState == gameStates.GAME_SETUP){
+            if (index != -1 && res_or_spy != -1 && spyinfo != [] && setup_players == false) {
+                for (var i = 0 ; i < playerdata.get('positions').length; i++) {
+                    var spritekey = 'u';
+                    var temp = ((index + i) % 5);
+                    if(res_or_spy == 0) {
+                        if(spyinfo[temp] == 0) {
+                            spritekey = 's'; 
+                        }
+                        else {
+                            spritekey = 'r'; 
+                        }
+                        if (i >= playerdata.get('turn')) {
+                            spritekey += '2';
+                        }
+                    }
+                    else {
+                        if (i == 0) { spritekey = 'r'; }
+                    }
+                    temp++;
+                    players.push( game.add.sprite(playerdata.get('positions')[i][0], playerdata.get('positions')[i][1], spritekey) );
+                    playertext.push( game.add.text(playerdata.get('positions')[i][0] - playerdata.get('index-x-offset'), playerdata.get('positions')[i][1], temp, { font: '20px Arial', fill: '#ffffff' }) );
+                    players[i].anchor.setTo(0.5, 0.5);
+                    playertext[i].anchor.setTo(0.5, 0.5);
+                    players[i].width = playerdata.get('size')[0];
+                    players[i].height = playerdata.get('size')[1];
+                }
+                setup_players = true;
+                timerText.text = "";
+            }
+        }
+        else if (currentState == gameStates.CAPTAIN_SELECTION){
+            console.log(alreadyRan);
+            if (!alreadyRan){
+                currentStateText.text = "Captain Selection Phase";
+                ezTimer(5);
+                alreadyRan = true;
+            }
+        }
+        else if (currentState == gameStates.TEAM_SELECTION){
+            console.log(alreadyRan);
+            if (!alreadyRan){
+                currentStateText.text = "Team Selection Phase";
+                ezTimer(5);
+                alreadyRan = true;
+            }
+        }
+        else if (currentState == gameStates.VOTE){
+            if (!alreadyRan){
+                currentStateText.text = "Voting Phase";
+                ezTimer(5);
+                alreadyRan = true;
+            }
+
+        }
+        else if (currentState == gameStates.DO_MISSION){
+            if (!alreadyRan){
+                currentStateText.text = "Mission Time";
+                ezTimer(5);
+                alreadyRan = true;
+            }
+        }
+        else if (currentState == gameStates.SHOW_RESULTS){
+            if (!alreadyRan){
+                currentStateText.text = "Results";
+                ezTimer(5);
+                alreadyRan = true;
+            }
+        }
 	},
 
 	toggleSound: function() {

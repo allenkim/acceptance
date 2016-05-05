@@ -54,7 +54,7 @@ var playersWaiting = [];
 var playersInGame = [];
 var resistanceorspy = [1,0,1,0,1]; // 0 means spy 1 means resistance
 
-var timerInUse = false;
+var numTimerCalled = 0; //this is used for keeping track of the number of clients trying to start timer
 var TIME_FOR_CONNECTION = 15; //15 seconds to connect before people get kicked out
 
 io.on('connection', function(socket){
@@ -109,6 +109,9 @@ io.on('connection', function(socket){
                     io.to(playersInGame[i]).emit('spyinfo', resistanceorspy);
                 }
             }	 
+            playersInGame.forEach(function(id){
+                io.to(id).emit('connection complete');
+            });
         }
     });
 
@@ -116,17 +119,20 @@ io.on('connection', function(socket){
         io.emit('chat message', msg);
     });
 
-    socket.on('StartTimer', function(msg) {
+    socket.on('start timer', function(msg) {
         console.log('Timer Started');
         var num = msg;
-        if (!timerInUse){
-            timerInUse = true;
+        numTimerCalled++;
+        if (numTimerCalled == MAX_NUM_PLAYERS){
+            playersInGame.forEach(function(id){
+                io.to(id).emit('start local timer', num);
+            });
+            numTimerCalled = 0;
             var iid = setInterval(function() {
                 num = num - 5;
-                io.emit('timerval', num);
+                io.emit('update time', num);
                 if (num <= 0) {
                     clearInterval(iid);
-                    timerinUse = false;
                 }
             }, 5000);
         }

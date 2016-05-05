@@ -41,8 +41,8 @@ socket.on('update time', function(num) {
 	timer = num;
 });
 
-socket.on('start local timer', function(num){
-    localTimer(num);
+socket.on('start local timer', function(time){
+    localTimer(time);
 });
 
 
@@ -55,10 +55,8 @@ function localTimer(timeDuration){
     var id = setInterval(function() { 
         timer = timer - 1; 
         timerText.text = timer;
-        if (timer <= 0) {
-            nextState();
-            clearInterval(id); 
-        } 
+        console.log(timer);
+        if (timer <= 0) { nextState(); clearInterval(id); } 
     }, 1000);
 };
 
@@ -112,7 +110,6 @@ var playState = {
 	},
 
 	update: function() {
-        console.log(currentState);
         if (currentState == gameStates.GAME_SETUP){
             if (index != -1 && res_or_spy != -1 && spyinfo != [] && setup_players == false) {
                 for (var i = 0 ; i < playerdata.get('positions').length; i++) {
@@ -145,7 +142,6 @@ var playState = {
             }
         }
         else if (currentState == gameStates.CAPTAIN_SELECTION){
-            console.log(alreadyRan);
             if (!alreadyRan){
                 currentStateText.text = "Captain Selection Phase";
                 ezTimer(5);
@@ -153,7 +149,6 @@ var playState = {
             }
         }
         else if (currentState == gameStates.TEAM_SELECTION){
-            console.log("Hello");
             if (!alreadyRan){
                 currentStateText.text = "Team Selection Phase";
                 ezTimer(5);
@@ -168,14 +163,12 @@ var playState = {
             }
 
         }
-        else if (currentState == gameStates.VOTE_RESULTS){
+        else if (currentState == gameStates.SHOW_VOTE){
              if (!alreadyRan){
                 currentStateText.text = "Voting Results";
                 ezTimer(5);
                 alreadyRan = true;
             }
-
-        }
 
         }
         else if (currentState == gameStates.DO_MISSION){

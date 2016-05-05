@@ -28,6 +28,7 @@ Array.prototype.shuffle = function() {
 
 var MAX_NUM_PLAYERS = 2;
 var numPlayersEntered = 0;
+var gotogame = false;
 
 app.get('/', function(req, res){
     return res.render('index.html');
@@ -38,14 +39,14 @@ app.get('/', function(req, res){
 app.get('/game', function(req, res, next){
 
     // ---- THESE ARE COMMENTED FOR BUILDING PURPOSES ------
-    if (numPlayersEntered < MAX_NUM_PLAYERS){
-        res.render('game.html');
-        numPlayersEntered++;
-    }
-    else{
-        res.send('You are not authorized to join the game!');
-    }
-    // ---- THESE ARE COMMENTED FOR BUILDING PURPOSES ------
+        if ((numPlayersEntered < MAX_NUM_PLAYERS) && gotogame){
+            res.render('game.html');
+            numPlayersEntered++;
+        }
+        else{
+            res.send('You are not authorized to join the game!');
+        }
+   // ---- THESE ARE COMMENTED FOR BUILDING PURPOSES ------
 
 });
 
@@ -64,6 +65,7 @@ io.on('connection', function(socket){
 
         if (playersWaiting.length == MAX_NUM_PLAYERS){
             numPlayersEntered = 0;
+            gotogame = true;
             playersWaiting.forEach(function(id){
                 io.to(id).emit('enter game');
             });
@@ -113,6 +115,9 @@ io.on('connection', function(socket){
                 io.to(id).emit('connection complete');
             });
         }
+        console.log('Sanity Check 3');
+        io.emit('chat message', ['Round 1 has begun!', 'Server']);
+        io.emit('chat message', ['Captain please choose your team!', 'Server']);	 
     });
 
     socket.on('chat message', function(msg){

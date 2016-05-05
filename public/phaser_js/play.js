@@ -13,7 +13,6 @@ socket.on('kick out', function(){
 // Index 
 var index = -1;
 socket.on('index', function(num) {
-	console.log(num);
 	index = num;
 });
 
@@ -29,6 +28,12 @@ socket.on('spyinfo', function(array) {
 	spyinfo = array;
 });
 
+var captain = -1;
+var captainsprite = null;
+var captaindraw = false;
+socket.on('captain', function(num) {
+	captain = num;
+});
 
 var setup_players = false;
 players = [];
@@ -75,9 +80,11 @@ var playState = {
 
 	update: function() {
 		if (index != -1 && res_or_spy != -1 && spyinfo != [] && setup_players == false) {
+			socket.emit('round start');
 			for (var i = 0 ; i < playerdata.get('positions').length; i++) {
 				var spritekey = 'u';
 				var temp = ((index + i) % 5);
+				var actual_index_offset = -(playerdata.get('index-x-offset'));
 				if(res_or_spy == 0) {
 					if(spyinfo[temp] == 0) {
 						spritekey = 's'; 
@@ -92,15 +99,35 @@ var playState = {
 				else {
 					if (i == 0) { spritekey = 'r'; }
 				}
+				if (i >= playerdata.get('turn')) {
+						actual_index_offset = playerdata.get('index-x-offset');
+				}
 				temp++;
 				players.push( game.add.sprite(playerdata.get('positions')[i][0], playerdata.get('positions')[i][1], spritekey) );
-				playertext.push( game.add.text(playerdata.get('positions')[i][0] - playerdata.get('index-x-offset'), playerdata.get('positions')[i][1], temp, { font: '20px Arial', fill: '#ffffff' }) );
+				playertext.push( game.add.text(playerdata.get('positions')[i][0] + actual_index_offset, playerdata.get('positions')[i][1], temp, { font: '20px Arial', fill: '#ffffff' }) );
 				players[i].anchor.setTo(0.5, 0.5);
 				playertext[i].anchor.setTo(0.5, 0.5);
 				players[i].width = playerdata.get('size')[0];
 				players[i].height = playerdata.get('size')[1];
 			}
 			setup_players = true;
+		}
+
+		if ((captain != -1) && (captaindraw == false)) {
+			var actual_index_offset = -(playerdata.get('index-x-offset'));
+			console.log(captain);
+			var temp = captain - index;
+			console.log(temp);
+			if (temp < 0) { temp += 5; }
+			console.log(temp);
+			if (temp >= playerdata.get('turn')) {
+				actual_index_offset = playerdata.get('index-x-offset');
+			}
+			captainsprite = game.add.sprite(playerdata.get('positions')[temp][0] - actual_index_offset, playerdata.get('positions')[temp][1], 'c');
+			captainsprite.anchor.setTo(0.5, 0.5);
+			captainsprite.width = 30;
+			captainsprite.height = 30;
+			captaindraw = true;
 		}
 	},
 

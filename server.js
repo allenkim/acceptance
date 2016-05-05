@@ -54,9 +54,12 @@ app.get('/game', function(req, res, next){
 var playersWaiting = [];
 var playersInGame = [];
 var resistanceorspy = [1,0,1,0,1]; // 0 means spy 1 means resistance
+var roundnumber = 0;
 
 var timerInUse = false;
 var TIME_FOR_CONNECTION = 15; //15 seconds to connect before people get kicked out
+
+var round_start_accumulator = 0;
 
 io.on('connection', function(socket){
     console.log('user ' +  socket.id + ' connected');
@@ -115,6 +118,19 @@ io.on('connection', function(socket){
             io.emit('chat message', ['Round 1 has begun!', 'Server']);
             io.emit('chat message', ['Captain please choose your team!', 'Server']);	 
         }
+    });
+
+    socket.on('round start', function() {
+
+        console.log(round_start_accumulator);
+        round_start_accumulator++;
+
+        if (round_start_accumulator >= MAX_NUM_PLAYERS) {
+            io.emit('captain', 3);
+            roundnumber++;
+            round_start_accumulator = 0;
+        }
+        
     });
 
     socket.on('chat message', function(msg){

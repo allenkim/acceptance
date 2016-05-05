@@ -5,6 +5,11 @@ socket.on('timerval', function(num) {
 	timer = num;
 });
 
+// get kicked out since all players couldn't connect in 15 seconds
+socket.on('kick out', function(){
+    window.location.href="/";
+});
+
 // Index 
 var index = -1;
 socket.on('index', function(num) {
@@ -24,6 +29,7 @@ socket.on('spyinfo', function(array) {
 	spyinfo = array;
 });
 
+
 var setup_players = false;
 players = [];
 playertext = [];
@@ -33,21 +39,20 @@ playerdata.set('positions', [[150, 200], [50, 135], [100, 60], [200, 60], [250, 
 playerdata.set('index-x-offset', 35);
 playerdata.set('turn', 3);
 
-var playState = {
+var timer_text;
+function eztimer(timeDuration){
+    timer = timeDuration;
+    socket.emit('StartTimer', timer);	
+    var id = setInterval(function() { 
+        timer = timer - 1; 
+        timer_text.text = timer;
+        if (timer <= 0) { clearInterval(id); } 
+    }, 1000);
+}
 
-	eztimer: function() {
-		socket.emit('StartTimer', timer);	
-		var id = setInterval(function() { 
-			timer = timer - 1; 
-			if (timer <= 0) { clearInterval(id); } 
-		}, 1000);
-	},
+var playState = {
 	create: function() { 
-		// Name of the game
-		//timer = 20;
-		//this.eztimer();
-		console.log('Sanity Check');
-		socket.emit('gamestart', true);
+		socket.emit('game start');
 
 		nameLabel = game.add.text(game.world.centerX, 10, 'Acceptance', { font: '20px Arial', fill: '#ffffff' });
 		nameLabel.anchor.setTo(0.5, 0.5);
@@ -63,6 +68,9 @@ var playState = {
 			this.muteButton.frame = 1;
 		}
 
+        // Display Timer
+        timer_text = game.add.text(game.world.centerX,game.world.centerY, timer, {font: "32px Arial", fill: "#FFFFFF" });
+		eztimer(20);
 	},
 
 	update: function() {

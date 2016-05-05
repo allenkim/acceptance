@@ -1,17 +1,18 @@
 var ejs = require('ejs');
 var express = require('express');
-var cors = require('cors');
 var app = express();
-var session = require('express-session');
-var bodyParser = require('body-parser');
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-// Variables to keep track of player count
-var MAX_NUM_PLAYERS = 2;
-var playersWaiting = [];
-var playersInGame = [];
-var resistanceorspy = [1,0,1,0,1]; // 0 means spy 1 means resistance
+// Set the parameters
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+app.set("view options", { layout: false });
+app.set('port', 3000);  
+app.set('ipaddr', "127.0.0.1");
+app.use(express.static(__dirname + '/public'));
+
+app.engine('html', ejs.renderFile);
 
 // Fischer-Yates Algorithm for shuffling an array - https://www.kirupa.com/html5/shuffling_array_js.htm
 Array.prototype.shuffle = function() {
@@ -25,60 +26,11 @@ Array.prototype.shuffle = function() {
     return input;
 }
 
-// Set the parameters
-app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
-app.set("view options", { layout: false });
-app.set('port', 3000);  
-app.set('ipaddr', "127.0.0.1");
-app.use(express.static(__dirname + '/public'));
+var MAX_NUM_PLAYERS = 2;
+var numPlayersEntered = 0;
 
-// Sessions allow us to verify if users can join the game
-app.use(session({
-    name: 'server-session-name',
-    secret: 'my express secret',
-    saveUninitialized: true,
-    resave: true,
-}));
-
-app.use(cors());
-
-// Body parser allows us to read the body from the POST request from client`
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
-app.engine('html', ejs.renderFile);
-
-// sessionToSockets is a map from a session ID to an array of socket IDs
-// socketToSession is a map from socket ID to session ID
-var sessionToSockets = {};
-var socketToSession = {};
-
-app.get('/', function(req, res, next){
-    if (typeof req.session.ready === 'undefined') {
-        req.session.ready = false;
-    }
+app.get('/', function(req, res){
     return res.render('index.html');
-});
-
-// This POST is called when the client first connects with their socket
-// This updates the maps of sessions and sockets
-app.post('/connect',function(req,res,next){
-    var sessID = req.sessionID;
-    var socketID = req.body.socketID;
-    socketToSession[socketID] = sessID;
-    if (sessID in sessionToSockets){
-        sessionToSockets[sessID].push(socketID);
-    }
-    else{
-        sessionToSockets[sessID] = [socketID];
-    }
-    res.end('done');
-});
-
-// This POST is called when the client is entering the game
-app.post('/enter',function(req,res,next){
-    req.session.ready = req.body.ready;
-    res.end('done');
 });
 
 // A client can only join the game if they are ready, meaning they have waited and the players have filled up
@@ -86,9 +38,9 @@ app.post('/enter',function(req,res,next){
 app.get('/game', function(req, res, next){
 
     // ---- THESE ARE COMMENTED FOR BUILDING PURPOSES ------
-    if (req.session.ready){
-        req.session.ready = false;
+    if (numPlayersEntered < MAX_NUM_PLAYERS){
         res.render('game.html');
+        numPlayersEntered++;
     }
     else{
         res.send('You are not authorized to join the game!');
@@ -97,34 +49,40 @@ app.get('/game', function(req, res, next){
 
 });
 
+// Variables to keep track of player count
+var playersWaiting = [];
+var playersInGame = [];
+var resistanceorspy = [1,0,1,0,1]; // 0 means spy 1 means resistance
+
+var timerInUse = false;
+var TIME_FOR_CONNECTION = 15; //15 seconds to connect before people get kicked out
+
 io.on('connection', function(socket){
     console.log('user ' +  socket.id + ' connected');
-    socket.emit('connect');
     socket.on('waiting', function(){
-        var sessID = socketToSession[socket.id];
-        var waitingAllowed = true;
-        for (var i = 0; i < playersWaiting.length; i++){
-            if (socketToSession[playersWaiting[i]] == sessID){
-                waitingAllowed = false;
-                break;
-            }
-        }
-        if (waitingAllowed){
-            playersWaiting.push(socket.id);
+        playersWaiting.push(socket.id);
 
-            if (playersWaiting.length == MAX_NUM_PLAYERS){
-                playersWaiting.forEach(function(id){
-                    io.to(id).emit('enter game');
-                });
-            }
-            else{
-                playersWaiting.forEach(function(id){
-                    io.to(id).emit('update waiting', {numPlayersWaitingFor: MAX_NUM_PLAYERS - playersWaiting.length, waitingAllowed: waitingAllowed});	
-                });	
-            }
+        if (playersWaiting.length == MAX_NUM_PLAYERS){
+            numPlayersEntered = 0;
+            playersWaiting.forEach(function(id){
+                io.to(id).emit('enter game');
+            });
+            timerInUse = true;
+            var iid = setInterval(function() {
+                if (playersInGame.length < MAX_NUM_PLAYERS) {
+                    timerinUse = false;
+                    playersInGame.forEach(function(id){
+                        io.to(id).emit('kick out');
+                    });
+                }
+                clearInterval(iid);
+            }, TIME_FOR_CONNECTION * 1000);
+
         }
         else{
-            io.to(socket.id).emit('update waiting', {numPlayersWaitingFor: MAX_NUM_PLAYERS - playersWaiting.length, waitingAllowed: waitingAllowed});	
+            playersWaiting.forEach(function(id){
+                io.to(id).emit('update waiting', {numPlayersWaitingFor: MAX_NUM_PLAYERS - playersWaiting.length});	
+            });	
         }
     });
 
@@ -133,12 +91,12 @@ io.on('connection', function(socket){
         if (idx != -1){
             playersWaiting.splice(idx,1);
             playersWaiting.forEach(function(id){
-                io.to(id).emit('update waiting', {numPlayersWaitingFor: MAX_NUM_PLAYERS - playersWaiting.length, waitingAllowed: true});
+                io.to(id).emit('update waiting', {numPlayersWaitingFor: MAX_NUM_PLAYERS - playersWaiting.length});
             });
         }
     });
 
-    socket.on('gamestart', function(){
+    socket.on('game start', function(){
         playersInGame.push(socket.id);
         console.log('Sanity Check 1-5 - ' + socket.id);
         if (playersInGame.length == MAX_NUM_PLAYERS) {
@@ -161,13 +119,17 @@ io.on('connection', function(socket){
     socket.on('StartTimer', function(msg) {
         console.log('Timer Started');
         var num = msg;
-        var iid = setInterval(function() {
-            num = num - 5;
-            io.emit('timerval', num);
-            if (num == 0) {
-                clearInterval(iid);
-            }
-        }, 5000);
+        if (!timerInUse){
+            timerInUse = true;
+            var iid = setInterval(function() {
+                num = num - 5;
+                io.emit('timerval', num);
+                if (num <= 0) {
+                    clearInterval(iid);
+                    timerinUse = false;
+                }
+            }, 5000);
+        }
     });
 
     socket.on('disconnect',function(){
@@ -175,14 +137,6 @@ io.on('connection', function(socket){
         var idx = playersWaiting.indexOf(socket.id);
         if (idx != -1)
             playersWaiting.splice(idx,1);
-        var sessID = socketToSession[socket.id];
-        delete socketToSession[socket.id];
-        if (sessID in sessionToSockets){
-            var sockIdx = sessionToSockets[sessID].indexOf(socket.id);
-            if (sockIdx != -1)
-                sessionToSockets[sessID].splice(sockIdx,1);
-        }
-
     });
 });
 

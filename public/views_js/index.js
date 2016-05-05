@@ -19,24 +19,10 @@ $( document ).ready(function(){
 	}); 
 });
 
-socket.on('connect', function(){
-	var socketID = "/#" + socket.io.engine.id;
-	$.post("http://localhost:3000/connect",{socketID:socketID});
-});
-
 socket.on('enter game', function(){
-	ready = true;
-	$.post("http://localhost:3000/enter",{ready:ready},function(data){        
-		if(data==='done')           
-			{
-				window.location.href="/game";
-			}
-	});
+    window.location.href="/game";
 });
 
 socket.on('update waiting', function(data){
-	if (data.waitingAllowed)
-		$('#waitingText span').text('Waiting for ' + data.numPlayersWaitingFor + ' more ' + ((data.numPlayersWaitingFor == 1) ? 'player...' : ' players...'));
-	else
-		$('#waitingText span').text('You are already waiting for a game in the same session!');
+    $('#waitingText span').text('Waiting for ' + data.numPlayersWaitingFor + ' more ' + ((data.numPlayersWaitingFor == 1) ? 'player...' : ' players...'));
 });

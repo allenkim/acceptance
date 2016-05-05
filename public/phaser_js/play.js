@@ -65,7 +65,7 @@ function localTimer(timeDuration){
 var gameStates = {
     GAME_SETUP: 1,
     CAPTAIN_SELECTION: 2,
-    TEAM_SELECTON: 3,
+    TEAM_SELECTION: 3,
     VOTE: 4,
     SHOW_VOTE: 5,
     DO_MISSION: 6,
@@ -84,6 +84,7 @@ socket.on('connection complete', function(){
 });
 
 function nextState(){
+    console.log("Next State called");
     currentState = (currentState == 7) ? 1 : currentState + 1;
     alreadyRan = false;
 };
@@ -152,7 +153,7 @@ var playState = {
             }
         }
         else if (currentState == gameStates.TEAM_SELECTION){
-            console.log(alreadyRan);
+            console.log("Hello");
             if (!alreadyRan){
                 currentStateText.text = "Team Selection Phase";
                 ezTimer(5);
@@ -165,6 +166,16 @@ var playState = {
                 ezTimer(5);
                 alreadyRan = true;
             }
+
+        }
+        else if (currentState == gameStates.VOTE_RESULTS){
+             if (!alreadyRan){
+                currentStateText.text = "Voting Results";
+                ezTimer(5);
+                alreadyRan = true;
+            }
+
+        }
 
         }
         else if (currentState == gameStates.DO_MISSION){

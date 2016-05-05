@@ -7,7 +7,7 @@ socket.on('timerval', function(num) {
 
 // get kicked out since all players couldn't connect in 15 seconds
 socket.on('kick out', function(){
-    window.location.href="/";
+    window.location.href="/";pmm
 });
 
 // Index 

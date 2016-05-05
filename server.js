@@ -110,7 +110,10 @@ io.on('connection', function(socket){
                 if (resistanceorspy[i] == 0) {
                     io.to(playersInGame[i]).emit('spyinfo', resistanceorspy);
                 }
-            }	 
+            }
+            console.log('Sanity Check 3');
+            io.emit('chat message', ['Round 1 has begun!', 'Server']);
+            io.emit('chat message', ['Captain please choose your team!', 'Server']);	 
         }
     });
 

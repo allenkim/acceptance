@@ -2,7 +2,9 @@
 $( document ).ready(function() {
 
 	$('form').submit(function(){
-		socket.emit('chat message', $('#m').val());
+		var temp = index+1;
+		message = [ $('#m').val(), 'Player ' + temp.toString() ];
+		socket.emit('chat message', message);
 		$('#m').val('');
 		return false;
 	})
@@ -10,7 +12,9 @@ $( document ).ready(function() {
 });
 
 
-socket.on('chat message', function(msg){
-	$('#messages').append($('<li>').text(msg));
+socket.on('chat message', function(themsg){
+	$('#messages').append($('<li>').text(
+		themsg[1] + ':  ' + themsg[0]
+	));
 	$('#messagespace').scrollTop(document.getElementById("messagespace").scrollHeight);
 });

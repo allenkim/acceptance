@@ -73,6 +73,7 @@ Object.freeze(gameStates);
 
 // map of whether the code in each state was run already
 var alreadyRan = false;
+var teamVoteApproved = false;
 
 var currentState = gameStates.GAME_SETUP;
 var currentStateText;
@@ -84,8 +85,19 @@ socket.on('connection complete', function(){
 });
 
 function nextState(){
-    console.log("Next State called");
-    currentState = (currentState == 7) ? 1 : currentState + 1;
+    console.log("next state called:", currentState);
+    if (currentState == gameStates.SHOW_RESULTS){
+        currentState = gameStates.CAPTAIN_SELECTION;
+    }
+    else if (currentState == gameStates.SHOW_VOTE){
+        if (teamVoteApproved)
+            currentState = gameStates.DO_MISSION;
+        else
+            currentState = gameStates.CAPTAIN_SELECTION;
+    }
+    else{
+        currentState++;
+    }
     alreadyRan = false;
 };
 
@@ -112,6 +124,7 @@ var playState = {
 	},
 
 	update: function() {
+        console.log(currentState);
         if (currentState == gameStates.GAME_SETUP){
             if (index != -1 && res_or_spy != -1 && spyinfo != [] && setup_players == false) {
                 for (var i = 0 ; i < playerdata.get('positions').length; i++) {

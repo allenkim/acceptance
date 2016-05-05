@@ -111,11 +111,10 @@ io.on('connection', function(socket){
             }	 
             playersInGame.forEach(function(id){
                 io.to(id).emit('connection complete');
+                io.to(id).emit('chat message', ['Round 1 has begun!', 'Server']);
+                io.to(id).emit('chat message', ['Captain please choose your team!', 'Server']);	 
             });
         }
-        console.log('Sanity Check 3');
-        io.emit('chat message', ['Round 1 has begun!', 'Server']);
-        io.emit('chat message', ['Captain please choose your team!', 'Server']);	 
     });
 
     socket.on('chat message', function(msg){

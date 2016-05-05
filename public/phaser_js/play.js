@@ -47,6 +47,7 @@ socket.on('start local timer', function(time){
 
 
 function ezTimer(timeDuration){
+    timerText.text = timeDuration;
     socket.emit('start timer', timeDuration);	
 };
 
@@ -55,7 +56,6 @@ function localTimer(timeDuration){
     var id = setInterval(function() { 
         timer = timer - 1; 
         timerText.text = timer;
-        console.log(timer);
         if (timer <= 0) { nextState(); clearInterval(id); } 
     }, 1000);
 };
@@ -78,7 +78,9 @@ var currentState = gameStates.GAME_SETUP;
 var currentStateText;
 
 socket.on('connection complete', function(){
-    nextState();
+    var id = setInterval(function() { 
+        if (setup_players) { nextState(); clearInterval(id); } 
+    }, 300);
 });
 
 function nextState(){

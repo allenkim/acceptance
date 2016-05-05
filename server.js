@@ -27,8 +27,7 @@ Array.prototype.shuffle = function() {
 }
 
 var MAX_NUM_PLAYERS = 2;
-var numPlayersEntered = 0;
-var gotogame = false;
+var numPlayersEntered = 2;
 
 app.get('/', function(req, res){
     return res.render('index.html');
@@ -39,7 +38,7 @@ app.get('/', function(req, res){
 app.get('/game', function(req, res, next){
 
     // ---- THESE ARE COMMENTED FOR BUILDING PURPOSES ------
-        if ((numPlayersEntered < MAX_NUM_PLAYERS) && gotogame){
+        if (numPlayersEntered < MAX_NUM_PLAYERS){
             res.render('game.html');
             numPlayersEntered++;
         }
@@ -65,7 +64,6 @@ io.on('connection', function(socket){
 
         if (playersWaiting.length == MAX_NUM_PLAYERS){
             numPlayersEntered = 0;
-            gotogame = true;
             playersWaiting.forEach(function(id){
                 io.to(id).emit('enter game');
             });

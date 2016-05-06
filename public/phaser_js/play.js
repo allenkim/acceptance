@@ -437,8 +437,9 @@ var playState = {
                  console.log(voteData);
                 currentStateText.text = "Voting Results";
                 for (var i = 0; i < players.length; i++){
+//                    console.log(i, position2playerindex(i), playerindex2position(i));
                     players[i].visible = false;
-                    if (voteData[i])
+                    if (voteData[position2playerindex(i,index)])
                         players_yes[i].visible = true;
                     else
                         players_no[i].visible = true;

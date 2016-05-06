@@ -26,7 +26,7 @@ Array.prototype.shuffle = function() {
     return input;
 }
 
-var MAX_NUM_PLAYERS = 2;
+var MAX_NUM_PLAYERS = 5;
 var numPlayersEntered = MAX_NUM_PLAYERS;
 
 app.get('/', function(req, res){
@@ -229,6 +229,7 @@ io.on('connection', function(socket){
             var mes = (result) ? ('Success') : ('Failure');
             io.emit('chat message', ['Mission Result was ' + mes + '!', 'Server']);
             io.emit('missionresult', result);
+            numpeoplecounter++;
         }
     });
 
@@ -282,6 +283,9 @@ io.on('connection', function(socket){
                 datatable[i+1][0] = voteResults[i];
                 if (voteResults[i] == true) { temp++; }
             }
+
+            // Include Team
+
             if (temp > (MAX_NUM_PLAYERS / 2)) {
                 datatable[6] = true;
                 if (missionresult != []) {

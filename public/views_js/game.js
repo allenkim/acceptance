@@ -14,6 +14,7 @@ $(document).keyup(function(e) {
 var data = [];
 
 socket.on('datatable', function(dt) {
+	console.log(data);
 	data.push(dt);
 	addrow(dataindex);
 	dataindex++;

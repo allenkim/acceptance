@@ -56,7 +56,8 @@ var resistanceorspy = [1,0,1,0,1]; // 0 means spy 1 means resistance
 var numpeople = [2,3,2,3,3];
 var numpeoplecounter = 0;
 var roundnumber = -1;
-var missionresult;
+var missionresult = [];
+var capindex;
 
 // voting related variables
 var voteResults = []; //indices of players to bool of voting result
@@ -133,7 +134,7 @@ io.on('connection', function(socket){
 
         if (accumulator >= MAX_NUM_PLAYERS) {
             roundnumber++;
-            var capindex = roundnumber % MAX_NUM_PLAYERS;
+            capindex = roundnumber % MAX_NUM_PLAYERS;
             io.emit('captain', capindex);
             capindex = capindex + 1;
             var rn = roundnumber + 1; 
@@ -199,7 +200,6 @@ io.on('connection', function(socket){
             playersInGame.forEach(function(id){
                 io.to(id).emit('team voting result', {voteResult: approved, voteData: voteResults});
             });
-            voteResults = [];
             accumulator = 0;
         }
     });
@@ -259,6 +259,44 @@ io.on('connection', function(socket){
         }
     });
 
+    socket.on('updatetable', function() {
+        accumulator++;
+
+        if (accumulator == MAX_NUM_PLAYERS) {
+            datatable = {
+                1: [true, false, false],
+                2: [true, false, false],
+                3: [true, false, false],
+                4: [true, false, false],
+                5: [true, false, false],
+                6: false,
+                7: 'Null'
+            };
+
+            // Include Captain
+            datatable[capindex+1][2] = true;
+
+            var temp = 0;
+            // Include Vote Result
+            for (var i = 0; i < voteResults.length; i++) {
+                datatable[i+1][0] = voteResults[i];
+                if (voteResults[i] == true) { temp++; }
+            }
+            if (temp > (MAX_NUM_PLAYERS / 2)) {
+                datatable[6] = true;
+                if (missionresult != []) {
+                    datatable[7] = 'Resistance';
+                    for (var i = 0; i < missionresult.length; i++) {
+                        if (missionresult[i] == 0) { datatable[7] = 'Spies'; }
+                    }
+                }
+            }
+
+            io.emit('datatable', datatable);
+            accumulator = 0;
+        }
+    });
+
     socket.on('disconnect',function(){
         console.log('user ' + socket.id + ' disconnected');
         var idx = playersWaiting.indexOf(socket.id);
@@ -270,6 +308,12 @@ io.on('connection', function(socket){
                 io.to(id).emit('kick out');
             });
         }
+        playersInGame = [];
+        playersWaiting = [];
+        accumulator = 0;
+        numpeoplecounter = 0;
+        roundnumber = -1;
+        missionresult = [];
     });
 });
 

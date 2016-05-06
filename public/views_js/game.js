@@ -1,7 +1,7 @@
 var socket = io();
 var dataindex = 0;
 
-
+/*
 $(document).keyup(function(e) {
 	if (e.keyCode == 32) {
 		if (dataindex < 3) {
@@ -10,8 +10,16 @@ $(document).keyup(function(e) {
 		}
 	}
 });
+*/
+var data = [];
 
-var data = [
+socket.on('datatable', function(dt) {
+	data.push(dt);
+	addrow(dataindex);
+	dataindex++;
+});
+
+var sampledata = [
 	{
 		// Vote, Team, Captain
 		1: [true, true, true],

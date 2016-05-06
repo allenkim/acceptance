@@ -197,6 +197,7 @@ socket.on('connection complete', function(){
 function nextState(){
     console.log("next state called:", currentState);
     if (currentState == gameStates.SHOW_RESULTS){
+        socket.emit('updatetable');
         currentState = gameStates.CAPTAIN_SELECTION;
         captaindraw = false;
     }
@@ -204,6 +205,7 @@ function nextState(){
         if (teamVoteApproved)
             currentState = gameStates.DO_MISSION;
         else {
+            socket.emit('updatetable');
             currentState = gameStates.CAPTAIN_SELECTION;
             captaindraw = false;
         }
@@ -301,6 +303,7 @@ var playState = {
 		}
         else if (currentState == gameStates.CAPTAIN_SELECTION){
             if (!alreadyRan){
+                datatabledraw = false;
                 currentStateText.text = "Captain Selection Phase";
                 socket.emit('round start');
                 ezTimer(5);
@@ -472,6 +475,7 @@ var playState = {
                 else if (missionresult == 1) {
                     currentStateText.text = "Result - Mission Success";
                 }
+
             }
         }
 	},

@@ -27,7 +27,7 @@ Array.prototype.shuffle = function() {
 }
 
 var MAX_NUM_PLAYERS = 2;
-var numPlayersEntered = 2;
+var numPlayersEntered = MAX_NUM_PLAYERS;
 
 app.get('/', function(req, res){
     return res.render('index.html');
@@ -56,6 +56,9 @@ var resistanceorspy = [1,0,1,0,1]; // 0 means spy 1 means resistance
 var numpeople = [2,3,2,3,3];
 var numpeoplecounter = 0;
 var roundnumber = -1;
+
+// voting related variables
+var voteResults = []; //indices of players to bool of voting result
 
 var numTimerCalled = 0; //this is used for keeping track of the number of clients trying to start timer
 var TIME_FOR_CONNECTION = 15; //15 seconds to connect before people get kicked out
@@ -169,6 +172,31 @@ io.on('connection', function(socket){
         io.emit('nextState');
     });
 
+    socket.on('team vote', function(data){
+        var idx = data.idx;
+        var approved = data.approved;
+        if (approved)
+            voteResults[idx] = true;
+        else
+            voteResults[idx] = false;
+        accumulator++;
+        if (accumulator == MAX_NUM_PLAYERS){
+            var numApproved = 0;
+            for (var i = 0; i < MAX_NUM_PLAYERS; i++){
+                if (voteResults[i])
+                    numApproved++;
+            }
+            var approved = false;
+            if (numApproved > (MAX_NUM_PLAYERS / 2))
+                approved = true;
+            playersInGame.forEach(function(id){
+                io.to(id).emit('team voting result', {voteResult: approved, voteData: voteResults});
+            });
+            voteResults = [];
+            accumulator = 0;
+        }
+    });
+
     socket.on('chat message', function(msg){
         io.emit('chat message', msg);
     });
@@ -186,6 +214,10 @@ io.on('connection', function(socket){
                 num = num - 5;
                 io.emit('update time', num);
                 if (num <= 0) {
+                    playersInGame.forEach(function(id){
+                        console.log('emitted nextstate');
+                        io.to(id).emit('nextState');
+                    });
                     clearInterval(iid);
                 }
             }, 5000);
@@ -197,6 +229,12 @@ io.on('connection', function(socket){
         var idx = playersWaiting.indexOf(socket.id);
         if (idx != -1)
             playersWaiting.splice(idx,1);
+        idx = playersInGame.indexOf(socket.id);
+        if (idx != -1){
+            playersInGame.forEach(function(id){
+                io.to(id).emit('kick out');
+            });
+        }
     });
 });
 

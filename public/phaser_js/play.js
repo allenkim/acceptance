@@ -64,6 +64,7 @@ socket.on('bcs', function(msg){
 	boxchosen = msg;
 });
 
+
 // Timer update variables
 var timer; //holds actual time for client
 var timerText; //this is the phaser object that represents the text on display 
@@ -97,7 +98,11 @@ function localTimer(timeDuration){
     var id = setInterval(function() { 
         timer = timer - 1; 
         timerText.text = timer;
-        if (timer <= 0) { nextState(); clearInterval(id); } 
+        if (timer <= 0) {
+            if (currentState == gameStates.VOTE && !voted)
+                approveTeam();
+            clearInterval(id);
+        } 
     }, 1000);
 };
 
@@ -109,6 +114,40 @@ function submitevent() {
 	}
     socket.emit('finalteamchosen', temp);
 }
+
+// Voting related stuff here
+var playerVote = true;
+var teamVoteApproved = false;
+var approve; //phaser images
+var reject; //phaser images
+var voted = false;
+
+function approveTeam(){
+    console.log("Approve!");
+    approve.visible = false;
+    reject.visible = false;
+    voted = true;
+    socket.emit('team vote',{idx: index, approved: true});
+};
+
+function rejectTeam(){
+    console.log("Reject!");
+    approve.visible = false;
+    reject.visible = false;
+    voted = true;
+    socket.emit('team vote',{idx: index, approved: false});
+};
+
+socket.on('team voting result',function(data){
+    var approved = data.voteResult;
+    var voteData = data.voteData;
+    console.log(approved);
+    if (approved)
+        teamVoteApproved = true;
+    else
+        teamVoteApproved = false;
+    timer = 0;
+});
 
 var gameStates = {
     GAME_SETUP: 1,
@@ -123,7 +162,6 @@ Object.freeze(gameStates);
 
 // map of whether the code in each state was run already
 var alreadyRan = false;
-var teamVoteApproved = false;
 
 var currentState = gameStates.GAME_SETUP;
 var currentStateText;
@@ -155,33 +193,43 @@ function nextState(){
 };
 
 socket.on('nextState', function() {
+    console.log("Received next state from server");
 	nextState();
 });
 
 var playState = {
-	create: function() { 
-		socket.emit('game start');
+    create: function() { 
+        socket.emit('game start');
 
-		currentStateText = game.add.text(game.world.centerX, 30, 'Waiting for players to connect', { font: '50px Arial', fill: '#ffffff' });
-		currentStateText.anchor.setTo(0.5, 0.5);
+        currentStateText = game.add.text(game.world.centerX, 30, 'Waiting for players to connect', { font: '50px Arial', fill: '#ffffff' });
+        currentStateText.anchor.setTo(0.5, 0.5);
 
-		music = game.add.audio('music');
+        music = game.add.audio('music');
 
-    	music.play();
+        music.play();
 
-		// Add a mute button
-		this.muteButton = game.add.button(0, 0, 'mute', this.toggleSound, this);
-		this.muteButton.input.useHandCursor = true;
-		if (game.sound.mute) {
-			this.muteButton.frame = 1;
-		}
+        // Add a mute button
+        this.muteButton = game.add.button(0, 0, 'mute', this.toggleSound, this);
+        this.muteButton.input.useHandCursor = true;
+        if (game.sound.mute) {
+            this.muteButton.frame = 1;
+        }
 
         timerText = game.add.text(300,180, "", {font: "20px Arial", fill: "#FFFFFF" });
         timerText.anchor.setTo(0.5,0.5);
 
         key1 = game.input.keyboard.addKey(Phaser.Keyboard.CONTROL);
         key1down = false;
-	},
+
+        approve = game.add.button(game.world.centerX - 200, game.world.height - 50, 'approve',approveTeam);
+        approve.visible = false;
+        approve.anchor.setTo(0.5,0.5);
+        approve.scale.setTo(0.2,0.2);
+        reject = game.add.button(game.world.centerX + 200, game.world.height - 50, 'reject', rejectTeam);
+        reject.visible = false;
+        reject.anchor.setTo(0.5,0.5);
+        reject.scale.setTo(0.2,0.2);
+    },
 
 	update: function() {
         //console.log(currentState);
@@ -322,7 +370,9 @@ var playState = {
         else if (currentState == gameStates.VOTE){
             if (!alreadyRan){
                 currentStateText.text = "Voting Phase";
-                ezTimer(5);
+                approve.visible = true;
+                reject.visible = true;
+                ezTimer(10);
                 alreadyRan = true;
             }
 

@@ -36,8 +36,8 @@ players = [];
 playertext = [];
 playerdata = new Map();
 playerdata.set('size', [50, 50]);
-playerdata.set('positions', [[150, 200], [50, 135], [100, 60], [200, 60], [250, 135]]);
-playerdata.set('index-x-offset', 35);
+playerdata.set('positions', [[300, 280], [150, 180], [225, 80], [375, 80], [450, 180]]);
+playerdata.set('index-x-offset', 40);
 playerdata.set('turn', 3);
 
 // Timer update variables
@@ -129,7 +129,7 @@ var playState = {
 			this.muteButton.frame = 1;
 		}
 
-        timerText = game.add.text(game.world.centerX,game.world.centerY, "", {font: "32px Arial", fill: "#FFFFFF" });
+        timerText = game.add.text(300,180, "", {font: "32px Arial", fill: "#FFFFFF" });
         timerText.anchor.setTo(0.5,0.5);
 	},
 

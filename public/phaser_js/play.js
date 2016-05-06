@@ -519,18 +519,18 @@ var playState = {
 	render: function() {
 		if (currentState >= gameStates.TEAM_SELECTION && teamchosen != [] && boxchosen != -1) {
 			for (var i = 0; i < teamchosen.length; i++) {
-				game.debug.geom(playerrects[teamchosen[i]], 'rgba(0, 255,255, 0.5)');
+				game.debug.geom(playerrects[teamchosen[i]], 'rgba(0, 255,255, 0.3)');
 			}
 			if (currentState == gameStates.TEAM_SELECTION) {
-				game.debug.geom(playerrects[teamchosen[boxchosen]], 'rgba(255,0,0,0.5)');
+				game.debug.geom(playerrects[teamchosen[boxchosen]], 'rgba(255,0,0,0.3)');
 			}
 		}
         if ((currentState == gameStates.DO_MISSION) && missionchosen != -1) {
             if (missionchosen == 0) {
-                game.debug.geom(failmissionrect, 'rgba(255,0,0,0.5)');
+                game.debug.geom(failmissionrect, 'rgba(255,0,0,0.3)');
             }
             else if (missionchosen == 1) {
-                game.debug.geom(successmissionrect, 'rgba(255,0,0,0.5)');
+                game.debug.geom(successmissionrect, 'rgba(255,0,0,0.3)');
             }
         }
 	},

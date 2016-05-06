@@ -130,7 +130,6 @@ io.on('connection', function(socket){
         console.log(accumulator);
         accumulator++;
         teamchosen = [];
-        missionresult = [];
 
         if (accumulator >= MAX_NUM_PLAYERS) {
             roundnumber++;
@@ -275,7 +274,7 @@ io.on('connection', function(socket){
             };
 
             // Include Captain
-            datatable[capindex+1][2] = true;
+            datatable[capindex][2] = true;
 
             var temp = 0;
             // Include Vote Result
@@ -285,17 +284,24 @@ io.on('connection', function(socket){
             }
 
             // Include Team
+            console.log(finalteam);
+            for (var i = 0; i < finalteam.length; i++) {
+                datatable[finalteam[i] + 1][1] = true;
+            }
 
             if (temp > (MAX_NUM_PLAYERS / 2)) {
                 datatable[6] = true;
                 if (missionresult != []) {
                     datatable[7] = 'Resistance';
+                    console.log(missionresult);
                     for (var i = 0; i < missionresult.length; i++) {
                         if (missionresult[i] == 0) { datatable[7] = 'Spies'; }
                     }
+                    missionresult = [];
                 }
             }
 
+            console.log(datatable);
             io.emit('datatable', datatable);
             accumulator = 0;
         }

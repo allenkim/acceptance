@@ -152,7 +152,7 @@ io.on('connection', function(socket){
         if (accumulator >= MAX_NUM_PLAYERS) {
             io.to(playersInGame[roundnumber % MAX_NUM_PLAYERS]).emit('numteam', temp);
             io.emit('chat message', ['Captain please choose ' + temp + ' players for your team!', 'Server']);
-            io.emit('chat message', ['Use CNTL key to switch between blue boxes', 'Server']);
+            io.emit('chat message', ['Use CTRL key to switch between blue boxes', 'Server']);
             accumulator = 0;
         }
     });

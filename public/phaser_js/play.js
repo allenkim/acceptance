@@ -434,11 +434,12 @@ var playState = {
 
         }
         else if (currentState == gameStates.SHOW_VOTE){
-             if (!alreadyRan){
-                 console.log(voteData);
+            if (!alreadyRan){
+                approve.visible = false;
+                reject.visible = false;
                 currentStateText.text = "Voting Results";
                 for (var i = 0; i < players.length; i++){
-//                    console.log(i, position2playerindex(i), playerindex2position(i));
+                    //                    console.log(i, position2playerindex(i), playerindex2position(i));
                     players[i].visible = false;
                     if (voteData[position2playerindex(i,index)])
                         players_yes[i].visible = true;

@@ -27,8 +27,7 @@ Array.prototype.shuffle = function() {
 }
 
 var MAX_NUM_PLAYERS = 2;
-var numPlayersEntered = 0;
-var gotogame = false;
+var numPlayersEntered = 2;
 
 app.get('/', function(req, res){
     return res.render('index.html');
@@ -39,7 +38,7 @@ app.get('/', function(req, res){
 app.get('/game', function(req, res, next){
 
     // ---- THESE ARE COMMENTED FOR BUILDING PURPOSES ------
-        if ((numPlayersEntered < MAX_NUM_PLAYERS) && gotogame){
+        if (numPlayersEntered < MAX_NUM_PLAYERS){
             res.render('game.html');
             numPlayersEntered++;
         }
@@ -56,7 +55,7 @@ var playersInGame = [];
 var resistanceorspy = [1,0,1,0,1]; // 0 means spy 1 means resistance
 var roundnumber = 0;
 
-var timerInUse = false;
+var numTimerCalled = 0; //this is used for keeping track of the number of clients trying to start timer
 var TIME_FOR_CONNECTION = 15; //15 seconds to connect before people get kicked out
 
 var round_start_accumulator = 0;
@@ -68,7 +67,6 @@ io.on('connection', function(socket){
 
         if (playersWaiting.length == MAX_NUM_PLAYERS){
             numPlayersEntered = 0;
-            gotogame = true;
             playersWaiting.forEach(function(id){
                 io.to(id).emit('enter game');
             });
@@ -113,10 +111,12 @@ io.on('connection', function(socket){
                 if (resistanceorspy[i] == 0) {
                     io.to(playersInGame[i]).emit('spyinfo', resistanceorspy);
                 }
-            }
-            console.log('Sanity Check 3');
-            io.emit('chat message', ['Round 1 has begun!', 'Server']);
-            io.emit('chat message', ['Captain please choose your team!', 'Server']);	 
+            }	 
+            playersInGame.forEach(function(id){
+                io.to(id).emit('connection complete');
+                io.to(id).emit('chat message', ['Round 1 has begun!', 'Server']);
+                io.to(id).emit('chat message', ['Captain please choose your team!', 'Server']);	 
+            });
         }
     });
 
@@ -126,7 +126,7 @@ io.on('connection', function(socket){
         round_start_accumulator++;
 
         if (round_start_accumulator >= MAX_NUM_PLAYERS) {
-            io.emit('captain', 3);
+            io.emit('captain', roundnumber % 5);
             roundnumber++;
             round_start_accumulator = 0;
         }
@@ -137,17 +137,20 @@ io.on('connection', function(socket){
         io.emit('chat message', msg);
     });
 
-    socket.on('StartTimer', function(msg) {
+    socket.on('start timer', function(msg) {
         console.log('Timer Started');
         var num = msg;
-        if (!timerInUse){
-            timerInUse = true;
+        numTimerCalled++;
+        if (numTimerCalled == MAX_NUM_PLAYERS){
+            playersInGame.forEach(function(id){
+                io.to(id).emit('start local timer', num);
+            });
+            numTimerCalled = 0;
             var iid = setInterval(function() {
                 num = num - 5;
-                io.emit('timerval', num);
+                io.emit('update time', num);
                 if (num <= 0) {
                     clearInterval(iid);
-                    timerinUse = false;
                 }
             }, 5000);
         }

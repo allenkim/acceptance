@@ -1,5 +1,8 @@
 // Initialize Phaser
-var game = new Phaser.Game(300, 225, Phaser.AUTO, 'gameDiv');
+var boxWidth = $("#Box1").width();
+var boxHeight = $("#Box1").height();
+
+var game = new Phaser.Game(boxWidth, boxHeight, Phaser.CANVAS, 'gameDiv');
 
 // A 'global' variable that everyone could see
 game.global = {

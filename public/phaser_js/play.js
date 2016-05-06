@@ -419,7 +419,7 @@ var playState = {
             if (!alreadyRan){
                 currentStateText.text = "Mission Time";
                 socket.emit('missionstart');
-                ezTimer(15);
+                ezTimer(10);
                 alreadyRan = true;
             }
 

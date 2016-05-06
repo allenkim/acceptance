@@ -34,15 +34,39 @@ socket.on('captain', function(num) {
 var setup_players = false;
 players = [];
 playertext = [];
+playerrects = [];
 playerdata = new Map();
 playerdata.set('size', [50, 50]);
+playerdata.set('rect-size', [80, 60]);
 playerdata.set('positions', [[300, 280], [150, 180], [225, 80], [375, 80], [450, 180]]);
+playerdata.set('rect-positions', [[248,250],[98,150],[173,50],[348,50],[423,150]]);
 playerdata.set('index-x-offset', 40);
 playerdata.set('turn', 3);
 
+socket.on('numteam', function(nt) {
+	teamnum = nt;
+});
+
+var teamnum = -1;
+var teamchosen = [];
+var boxchosen = -1;
+var filldefaultteam = false;
+
+socket.on('tcs', function(msg){
+	var temp = [];
+	for (var i = 0; i < msg.length; i++) {
+		temp.push(playerindex2position(msg[i], index));
+	}
+ 	teamchosen = temp;
+});
+
+socket.on('bcs', function(msg){
+	boxchosen = msg;
+});
+
 // Timer update variables
 var timer; //holds actual time for client
-var timerText; //this is the phaser object that represents the text on display
+var timerText; //this is the phaser object that represents the text on display 
 
 socket.on('update time', function(num) {
 	timer = num;
@@ -76,6 +100,15 @@ function localTimer(timeDuration){
         if (timer <= 0) { nextState(); clearInterval(id); } 
     }, 1000);
 };
+
+function submitevent() {
+	submit.destroy();
+	var temp = [];
+	for (var i = 0; i < teamchosen.length; i++) {
+		temp.push(position2playerindex(teamchosen[i], index));
+	}
+    socket.emit('finalteamchosen', temp);
+}
 
 var gameStates = {
     GAME_SETUP: 1,
@@ -121,6 +154,10 @@ function nextState(){
     alreadyRan = false;
 };
 
+socket.on('nextState', function() {
+	nextState();
+});
+
 var playState = {
 	create: function() { 
 		socket.emit('game start');
@@ -139,8 +176,11 @@ var playState = {
 			this.muteButton.frame = 1;
 		}
 
-        timerText = game.add.text(300,180, "", {font: "32px Arial", fill: "#FFFFFF" });
+        timerText = game.add.text(300,180, "", {font: "20px Arial", fill: "#FFFFFF" });
         timerText.anchor.setTo(0.5,0.5);
+
+        key1 = game.input.keyboard.addKey(Phaser.Keyboard.CONTROL);
+        key1down = false;
 	},
 
 	update: function() {
@@ -171,6 +211,7 @@ var playState = {
                     temp++;
                     players.push( game.add.sprite(playerdata.get('positions')[i][0], playerdata.get('positions')[i][1], spritekey) );
                     playertext.push( game.add.text(playerdata.get('positions')[i][0] + actual_index_offset, playerdata.get('positions')[i][1], temp, { font: '20px Arial', fill: '#ffffff' }) );
+                    playerrects.push( new Phaser.Rectangle(playerdata.get('rect-positions')[i][0], playerdata.get('rect-positions')[i][1], playerdata.get('rect-size')[0], playerdata.get('rect-size')[1]));
                     players[i].anchor.setTo(0.5, 0.5);
                     playertext[i].anchor.setTo(0.5, 0.5);
                     players[i].width = playerdata.get('size')[0];
@@ -184,7 +225,7 @@ var playState = {
             if (!alreadyRan){
                 currentStateText.text = "Captain Selection Phase";
                 socket.emit('round start');
-                ezTimer(10);
+                ezTimer(5);
                 alreadyRan = true;
             }
             else if ((captain != prevcaptain) && (captaindraw == false)) {
@@ -204,9 +245,78 @@ var playState = {
         }
         else if (currentState == gameStates.TEAM_SELECTION){
             if (!alreadyRan){
+            	teamnum = -1;
+				teamchosen = [];
+				boxchosen = -1;
+				filldefaultteam = false;
+
                 currentStateText.text = "Team Selection Phase";
-                ezTimer(5);
+                socket.emit('team_choose');
+                //ezTimer(5);
                 alreadyRan = true;
+            }
+            // teamnum is number of people in team - only captain gets to know that - used to separate captain logic from other player logic
+            if (teamnum != -1) {
+            	timerText.text="";
+            	if (filldefaultteam == false) {
+            		
+            		submit = game.add.sprite(300,180,'submit');
+            		submit.anchor.setTo(0.5,0.5);
+            		submit.width = 80;
+            		submit.height = 40;
+            		submit.inputEnabled = true;
+
+            		submit.events.onInputDown.add(submitevent, this);
+
+            		for (var i = 0 ; i < teamnum; i++) {
+            			teamchosen.push(i);
+            		}
+            		boxchosen = 0;
+
+            		var tcs = [];
+            		for (var j = 0; j < teamnum; j++) {
+            			tcs.push(position2playerindex(teamchosen[j], index));
+            		}
+            		socket.emit('teamchosen', tcs);
+            		socket.emit('boxchosen', boxchosen);
+            		filldefaultteam = true;
+            	}
+            	else {
+            		if (game.input.mousePointer.isDown) {
+            			for (var i = 0; i < playerrects.length; i++) {
+            				if (playerrects[i].contains(game.input.mousePointer.x, game.input.mousePointer.y)) {
+            					var selfchoice = false;
+            					for (var j = 0; j < teamnum; j++) {
+            						if (teamchosen[j] == i) {selfchoice = true; } 
+            					}
+            					if (selfchoice == false) { 		
+            						teamchosen[boxchosen] = i; 
+            						
+            						var tcs = [];
+            						for (var j = 0; j < teamnum; j++) {
+            							tcs.push(position2playerindex(teamchosen[j], index));
+            						}
+            						socket.emit('teamchosen', tcs);
+            					}
+            				}
+            			}
+            		}
+            		else if (key1.isDown && key1down == false) {
+            			boxchosen = (boxchosen + 1) % teamnum;
+            			socket.emit('boxchosen', boxchosen);
+            			key1down = true;
+            		}
+            		else if (key1.isUp && key1down) {
+            			key1down = false;
+            		}
+            	}
+            	//submit.destroy()
+            	//filldefaultteam = false;
+            	//teamnum = -1;
+            	//nextState();
+            }
+            else {
+            	timerText.text = "Waiting for Captain";
             }
         }
         else if (currentState == gameStates.VOTE){
@@ -239,6 +349,17 @@ var playState = {
                 alreadyRan = true;
             }
         }
+	},
+
+	render: function() {
+		if (currentState >= gameStates.TEAM_SELECTION && teamchosen != [] && boxchosen != -1) {
+			for (var i = 0; i < teamchosen.length; i++) {
+				game.debug.geom(playerrects[teamchosen[i]], 'rgba(0, 255,255, 0.5)');
+			}
+			if (currentState == gameStates.TEAM_SELECTION) {
+				game.debug.geom(playerrects[teamchosen[boxchosen]], 'rgba(255,0,0,0.5)');
+			}
+		}
 	},
 
 	toggleSound: function() {

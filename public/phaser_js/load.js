@@ -18,7 +18,8 @@ var loadState = {
 		game.load.image('s', 'assets/sprites/s.png');
 		game.load.image('r2', 'assets/sprites/r2.png');
 		game.load.image('s2', 'assets/sprites/s2.png');
-		game.load.image('c', 'assets/sprites/cap.png')
+		game.load.image('c', 'assets/sprites/cap.png');
+		game.load.image('submit', 'assets/submit.png');
 		
 		//  Firefox doesn't support mp3 files, so use ogg
     game.load.audio('music', ['assets/music.mp3', 'assets/music.ogg']);

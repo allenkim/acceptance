@@ -3,7 +3,7 @@ var dataindex = 0;
 
 
 $(document).keyup(function(e) {
-	if (e.keyCode == 17) {
+	if (e.keyCode == 32) {
 		if (dataindex < 3) {
 			addrow(dataindex);
 			dataindex++;

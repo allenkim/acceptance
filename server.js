@@ -53,12 +53,14 @@ app.get('/game', function(req, res, next){
 var playersWaiting = [];
 var playersInGame = [];
 var resistanceorspy = [1,0,1,0,1]; // 0 means spy 1 means resistance
-var roundnumber = 0;
+var numpeople = [2,3,2,3,3];
+var numpeoplecounter = 0;
+var roundnumber = -1;
 
 var numTimerCalled = 0; //this is used for keeping track of the number of clients trying to start timer
 var TIME_FOR_CONNECTION = 15; //15 seconds to connect before people get kicked out
 
-var round_start_accumulator = 0;
+var accumulator = 0;
 
 io.on('connection', function(socket){
     console.log('user ' +  socket.id + ' connected');
@@ -115,22 +117,56 @@ io.on('connection', function(socket){
             playersInGame.forEach(function(id){
                 io.to(id).emit('connection complete');
                 io.to(id).emit('chat message', ['Round 1 has begun!', 'Server']);
-                io.to(id).emit('chat message', ['Captain please choose your team!', 'Server']);	 
             });
         }
     });
 
     socket.on('round start', function() {
+        console.log(accumulator);
+        accumulator++;
 
-        console.log(round_start_accumulator);
-        round_start_accumulator++;
-
-        if (round_start_accumulator >= MAX_NUM_PLAYERS) {
-            io.emit('captain', roundnumber % 5);
+        if (accumulator >= MAX_NUM_PLAYERS) {
             roundnumber++;
-            round_start_accumulator = 0;
+            var capindex = roundnumber % MAX_NUM_PLAYERS;
+            io.emit('captain', capindex);
+            capindex = capindex + 1;
+            io.emit('chat message', ['Captain is player ' + capindex + '!' , 'Server']); 
+            accumulator = 0;
         }
         
+    });
+
+    socket.on('team_choose', function(){
+        var temp = numpeople[numpeoplecounter];
+        // numpeoplecounter++ only when team selection is successful
+        accumulator++;
+        console.log('a - ' + accumulator);
+        if (accumulator >= MAX_NUM_PLAYERS) {
+            io.to(playersInGame[roundnumber % MAX_NUM_PLAYERS]).emit('numteam', temp);
+            io.emit('chat message', ['Captain please choose ' + temp + ' players for your team!', 'Server']);
+            accumulator = 0;
+        }
+    });
+
+    socket.on('boxchosen', function(msg) {
+        for (var i = 0; i < MAX_NUM_PLAYERS; i++) {
+            if (playersInGame[i] != socket.id) {
+                io.to(playersInGame[i]).emit('bcs', msg);
+            }
+        }
+    });
+
+    socket.on('teamchosen', function(msg) {
+        for (var i = 0; i < MAX_NUM_PLAYERS; i++) {
+            if (playersInGame[i] != socket.id) {
+                io.to(playersInGame[i]).emit('tcs', msg);
+            }
+        }
+    });
+
+    socket.on('finalteamchosen', function(msg) {
+        console.log(msg);
+        io.emit('nextState');
     });
 
     socket.on('chat message', function(msg){

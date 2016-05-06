@@ -26,7 +26,7 @@ Array.prototype.shuffle = function() {
     return input;
 }
 
-var MAX_NUM_PLAYERS = 2;
+var MAX_NUM_PLAYERS = 5;
 var numPlayersEntered = MAX_NUM_PLAYERS;
 
 app.get('/', function(req, res){

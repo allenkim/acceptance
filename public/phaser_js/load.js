@@ -19,6 +19,18 @@ var loadState = {
 		game.load.image('r2', 'assets/sprites/r2.png');
 		game.load.image('s2', 'assets/sprites/s2.png');
 		game.load.image('c', 'assets/sprites/cap.png');
+
+        game.load.image('r-yes', 'assets/sprites/r-yes.png');
+        game.load.image('r2-yes', 'assets/sprites/r2-yes.png');
+        game.load.image('s-yes', 'assets/sprites/s-yes.png');
+        game.load.image('s2-yes', 'assets/sprites/s2-yes.png');
+		game.load.image('u-yes', 'assets/sprites/unknown-yes.png');
+        game.load.image('r-no', 'assets/sprites/r-no.png');
+        game.load.image('r2-no', 'assets/sprites/r2-no.png');
+        game.load.image('s-no', 'assets/sprites/s-no.png');
+        game.load.image('s2-no', 'assets/sprites/s2-no.png');
+		game.load.image('u-no', 'assets/sprites/unknown-no.png');
+
         game.load.image('approve','assets/sprites/approved.png');
         game.load.image('reject','assets/sprites/rejected.png');
 		game.load.image('submit', 'assets/submit.png');

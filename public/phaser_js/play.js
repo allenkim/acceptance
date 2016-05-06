@@ -33,6 +33,8 @@ socket.on('captain', function(num) {
 
 var setup_players = false;
 players = [];
+players_yes = [];
+players_no = [];
 playertext = [];
 playerrects = [];
 playerdata = new Map();
@@ -42,6 +44,7 @@ playerdata.set('positions', [[300, 280], [150, 180], [225, 80], [375, 80], [450,
 playerdata.set('rect-positions', [[248,250],[98,150],[173,50],[348,50],[423,150]]);
 playerdata.set('index-x-offset', 40);
 playerdata.set('turn', 3);
+
 
 socket.on('numteam', function(nt) {
 	teamnum = nt;
@@ -144,6 +147,7 @@ var teamVoteApproved = false;
 var approve; //phaser images
 var reject; //phaser images
 var voted = false;
+var voteData = [];
 
 function approveTeam(){
     console.log("Approve!");
@@ -163,7 +167,7 @@ function rejectTeam(){
 
 socket.on('team voting result',function(data){
     var approved = data.voteResult;
-    var voteData = data.voteData;
+    voteData = data.voteData;
     console.log(approved);
     if (approved)
         teamVoteApproved = true;
@@ -264,6 +268,7 @@ var playState = {
 	update: function() {
         //console.log(currentState);
         if (currentState == gameStates.GAME_SETUP){
+
             if (index != -1 && res_or_spy != -1 && spyinfo != [] && setup_players == false) {
                 for (var i = 0 ; i < playerdata.get('positions').length; i++) {
                     var spritekey = 'u';
@@ -288,19 +293,39 @@ var playState = {
                     }
                     temp++;
                     players.push( game.add.sprite(playerdata.get('positions')[i][0], playerdata.get('positions')[i][1], spritekey) );
+                    players_yes.push( game.add.sprite(playerdata.get('positions')[i][0], playerdata.get('positions')[i][1], spritekey+'-yes') );
+                    players_no.push( game.add.sprite(playerdata.get('positions')[i][0], playerdata.get('positions')[i][1], spritekey+'-no') );
                     playertext.push( game.add.text(playerdata.get('positions')[i][0] + actual_index_offset, playerdata.get('positions')[i][1], temp, { font: '20px Arial', fill: '#ffffff' }) );
                     playerrects.push( new Phaser.Rectangle(playerdata.get('rect-positions')[i][0], playerdata.get('rect-positions')[i][1], playerdata.get('rect-size')[0], playerdata.get('rect-size')[1]));
                     players[i].anchor.setTo(0.5, 0.5);
                     playertext[i].anchor.setTo(0.5, 0.5);
                     players[i].width = playerdata.get('size')[0];
                     players[i].height = playerdata.get('size')[1];
+
+
+                    players_yes[i].anchor.setTo(0.5, 0.5);
+                    players_yes[i].width = playerdata.get('size')[0];
+                    players_yes[i].height = playerdata.get('size')[1];
+                    players_yes[i].visible = false;
+
+                    players_no[i].anchor.setTo(0.5, 0.5);
+                    players_no[i].width = playerdata.get('size')[0];
+                    players_no[i].height = playerdata.get('size')[1];
+                    players_no[i].visible = false;
                 }
                 setup_players = true;
                 timerText.text = "";
             }
-		}
+    	}
         else if (currentState == gameStates.CAPTAIN_SELECTION){
             if (!alreadyRan){
+                for (var i = 0; i < players.length; i++){
+                    players[i].visible = true;
+                    players_yes[i].visible = false;
+                    players_no[i].visible = false;
+                }
+
+
                 currentStateText.text = "Captain Selection Phase";
                 socket.emit('round start');
                 ezTimer(5);
@@ -409,8 +434,16 @@ var playState = {
         }
         else if (currentState == gameStates.SHOW_VOTE){
              if (!alreadyRan){
+                 console.log(voteData);
                 currentStateText.text = "Voting Results";
-                ezTimer(5);
+                for (var i = 0; i < players.length; i++){
+                    players[i].visible = false;
+                    if (voteData[i])
+                        players_yes[i].visible = true;
+                    else
+                        players_no[i].visible = true;
+                }
+                ezTimer(15);
                 alreadyRan = true;
             }
 

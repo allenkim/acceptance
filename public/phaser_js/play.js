@@ -52,6 +52,16 @@ socket.on('start local timer', function(time){
     localTimer(time);
 });
 
+function playerindex2position(other_index, you_index) {
+	var temporary = other_index - you_index;
+	if (temporary < 0) { temporary += 5; }
+	return temporary;
+}
+
+function position2playerindex(other_position, you_index) {
+	return ((other_position + you_index) % 5);
+}
+
 
 function ezTimer(timeDuration){
     timerText.text = timeDuration;
@@ -139,7 +149,7 @@ var playState = {
             if (index != -1 && res_or_spy != -1 && spyinfo != [] && setup_players == false) {
                 for (var i = 0 ; i < playerdata.get('positions').length; i++) {
                     var spritekey = 'u';
-                    var temp = ((index + i) % 5);
+                    var temp = position2playerindex(i, index);
                     var actual_index_offset = -(playerdata.get('index-x-offset'));
                     if(res_or_spy == 0) {
                         if(spyinfo[temp] == 0) {
@@ -174,17 +184,13 @@ var playState = {
             if (!alreadyRan){
                 currentStateText.text = "Captain Selection Phase";
                 socket.emit('round start');
-                ezTimer(5);
+                ezTimer(10);
                 alreadyRan = true;
             }
             else if ((captain != prevcaptain) && (captaindraw == false)) {
             	prevcaptain = captain;
 				var actual_index_offset = -(playerdata.get('index-x-offset'));
-				console.log(captain);
-				var temp = captain - index;
-				console.log(temp);
-				if (temp < 0) { temp += 5; }
-				console.log(temp);
+				var temp = playerindex2position(captain, index);
 				if (temp >= playerdata.get('turn')) {
 					actual_index_offset = playerdata.get('index-x-offset');
 				}

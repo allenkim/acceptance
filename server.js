@@ -56,6 +56,7 @@ var resistanceorspy = [1,0,1,0,1]; // 0 means spy 1 means resistance
 var numpeople = [2,3,2,3,3];
 var numpeoplecounter = 0;
 var roundnumber = -1;
+var missionresult;
 
 // voting related variables
 var voteResults = []; //indices of players to bool of voting result
@@ -64,6 +65,7 @@ var numTimerCalled = 0; //this is used for keeping track of the number of client
 var TIME_FOR_CONNECTION = 15; //15 seconds to connect before people get kicked out
 
 var accumulator = 0;
+var finalteam = [];
 
 io.on('connection', function(socket){
     console.log('user ' +  socket.id + ' connected');
@@ -119,7 +121,6 @@ io.on('connection', function(socket){
             }	 
             playersInGame.forEach(function(id){
                 io.to(id).emit('connection complete');
-                io.to(id).emit('chat message', ['Round 1 has begun!', 'Server']);
             });
         }
     });
@@ -127,12 +128,16 @@ io.on('connection', function(socket){
     socket.on('round start', function() {
         console.log(accumulator);
         accumulator++;
+        teamchosen = [];
+        missionresult = [];
 
         if (accumulator >= MAX_NUM_PLAYERS) {
             roundnumber++;
             var capindex = roundnumber % MAX_NUM_PLAYERS;
             io.emit('captain', capindex);
             capindex = capindex + 1;
+            var rn = roundnumber + 1; 
+            io.emit('chat message', ['Round ' + rn + ' has begun!', 'Server']);
             io.emit('chat message', ['Captain is player ' + capindex + '!' , 'Server']); 
             accumulator = 0;
         }
@@ -147,6 +152,7 @@ io.on('connection', function(socket){
         if (accumulator >= MAX_NUM_PLAYERS) {
             io.to(playersInGame[roundnumber % MAX_NUM_PLAYERS]).emit('numteam', temp);
             io.emit('chat message', ['Captain please choose ' + temp + ' players for your team!', 'Server']);
+            io.emit('chat message', ['Use CNTL key to switch between blue boxes', 'Server']);
             accumulator = 0;
         }
     });
@@ -169,6 +175,7 @@ io.on('connection', function(socket){
 
     socket.on('finalteamchosen', function(msg) {
         console.log(msg);
+        finalteam = msg;
         io.emit('nextState');
     });
 
@@ -194,6 +201,34 @@ io.on('connection', function(socket){
             });
             voteResults = [];
             accumulator = 0;
+        }
+    });
+
+    socket.on('missionstart', function() {
+        accumulator++;
+        if (accumulator >= MAX_NUM_PLAYERS) {
+            accumulator = 0;
+            io.emit('chat message', ['Team members, complete the mission!', 'Server']);
+            for (var i = 0; i < finalteam.length; i++) {
+                io.to(playersInGame[finalteam[i]]).emit('domission');
+            }
+        }
+
+    });
+
+    socket.on('missionchosen', function(res) {
+        missionresult.push(res);
+        if (missionresult.length >= MAX_NUM_PLAYERS) {
+            var result = true;
+            for (var i = 0; i < missionresult.length; i++) {
+                if (missionresult[i] == 0) { 
+                    result = false;
+                    break;
+                }
+            }
+            var mes = (result) ? ('Success') : ('Failure');
+            io.emit('chat message', ['Mission Result was ' + mes + '!', 'Server']);
+            io.emit('missionresult', result);
         }
     });
 

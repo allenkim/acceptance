@@ -76,6 +76,29 @@ socket.on('start local timer', function(time){
     localTimer(time);
 });
 
+var domission;
+var setupmissionsprites;
+var success;
+var fail;
+var successmissionrect;
+var failmissionrect;
+var missionchosen = -1;
+socket.on('domission', function() {
+    domission = true;
+});
+
+var missionresult = -1;
+
+socket.on('missionresult', function(bool){
+    if (bool) {
+        missionresult = 1;
+    }
+    else {
+        missionresult = 0;
+    }
+});
+
+
 function playerindex2position(other_index, you_index) {
 	var temporary = other_index - you_index;
 	if (temporary < 0) { temporary += 5; }
@@ -123,7 +146,7 @@ Object.freeze(gameStates);
 
 // map of whether the code in each state was run already
 var alreadyRan = false;
-var teamVoteApproved = false;
+var teamVoteApproved = true;
 
 var currentState = gameStates.GAME_SETUP;
 var currentStateText;
@@ -181,6 +204,14 @@ var playState = {
 
         key1 = game.input.keyboard.addKey(Phaser.Keyboard.CONTROL);
         key1down = false;
+
+        domission = false;
+        setupmissionsprites = false;
+        missionchosen = -1;
+        successmissionrect = null;
+        failmissionrect = null;
+
+        missionresult = -1;
 	},
 
 	update: function() {
@@ -338,15 +369,60 @@ var playState = {
         else if (currentState == gameStates.DO_MISSION){
             if (!alreadyRan){
                 currentStateText.text = "Mission Time";
-                ezTimer(5);
+                socket.emit('missionstart');
+                ezTimer(15);
                 alreadyRan = true;
+            }
+
+            if (domission) {
+                if(setupmissionsprites == false) {
+                    success = game.add.sprite(150, 280, 'success');
+                    success.anchor.setTo(0.5, 0.5);
+                    success.width = 100;
+                    success.height = 100;
+                    fail = game.add.sprite(450, 280, 'fail');
+                    fail.anchor.setTo(0.5, 0.5);
+                    fail.width = 100;
+                    fail.height = 100;
+                    successmissionrect = new Phaser.Rectangle(100, 230, 100, 100);
+                    failmissionrect = new Phaser.Rectangle(400, 230, 100, 100);
+                    missionchosen = 1;
+                    setupmissionsprites = true;
+                }
+                else {
+                    if (game.input.mousePointer.isDown) {
+                        if ((missionchosen == 1) && failmissionrect.contains(game.input.mousePointer.x, game.input.mousePointer.y)) {
+                            if (spyinfo[index] == 0) {
+                                missionchosen = 0;
+                            }
+                        }
+                        else if ((missionchosen == 0) && successmissionrect.contains(game.input.mousePointer.x, game.input.mousePointer.y)) {
+                            missionchosen = 1;
+                        }
+                    }
+
+                }
             }
         }
         else if (currentState == gameStates.SHOW_RESULTS){
             if (!alreadyRan){
-                currentStateText.text = "Results";
-                ezTimer(5);
+                success.destroy();
+                fail.destroy();
+                successmissionrect = null;
+                failmissionrect = null;
+                domission = false;
+                setupmissionsprites = false;
+                socket.emit('missionchosen', missionchosen);
+                ezTimer(10);
                 alreadyRan = true;
+            }
+            if (missionresult != -1) {
+                if (missionresult == 0) {
+                     currentStateText.text = "Result - Mission Failure";
+                }
+                else if (missionresult == 1) {
+                    currentStateText.text = "Result - Mission Success";
+                }
             }
         }
 	},
@@ -360,6 +436,14 @@ var playState = {
 				game.debug.geom(playerrects[teamchosen[boxchosen]], 'rgba(255,0,0,0.5)');
 			}
 		}
+        if ((currentState == gameStates.DO_MISSION) && missionchosen != -1) {
+            if (missionchosen == 0) {
+                game.debug.geom(failmissionrect, 'rgba(255,0,0,0.5)');
+            }
+            else if (missionchosen == 1) {
+                game.debug.geom(successmissionrect, 'rgba(255,0,0,0.5)');
+            }
+        }
 	},
 
 	toggleSound: function() {
